@@ -74,11 +74,9 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// SSL Configuration for Express server
+// SSL Configuration: Load certificate directly from environment variable
 const sslOptions = {
-    //key: fs.readFileSync(process.env.PEM_CERT_KEY), // Path to your private key for your server (if required)
-    cert: fs.readFileSync(process.env.PEM_CERT), // Path to your public certificate for your server
-    //ca: fs.readFileSync(process.env.PEM_CERT_CA), // Path to your certificate authority file (if required)
+    ca: process.env.PEM_CERT, // Certificate from the environment variable
 };
 
 // Start the HTTPS server
