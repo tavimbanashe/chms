@@ -74,9 +74,9 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// SSL Configuration: Load certificate directly from environment variable
+// SSL Configuration: Load certificate from environment variable
 const sslOptions = {
-    cert: process.env.PEM_CERT, // Full certificate from environment variable
+    cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Properly load the RDS certificate
 };
 
 // Start the HTTPS server
