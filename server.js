@@ -33,6 +33,17 @@ const offeringsRoutes = require('./routes/offeringsRoutes');
 // Create the Express app
 const app = express();
 
+// Verify PEM_CERT environment variable
+if (!process.env.PEM_CERT) {
+    console.error('Error: PEM_CERT environment variable is not set.');
+    process.exit(1);
+}
+
+// SSL Configuration
+const sslOptions = {
+    cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Load the certificate
+};
+
 // CORS Configuration
 const corsOptions = {
     origin: 'https://churchmanagementsystem.netlify.app/',
@@ -69,6 +80,7 @@ app.use('/api', otherApisRoutes);
 app.use('/api/offerings', offeringsRoutes);
 
 // Default route for health check
+  
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
@@ -78,6 +90,8 @@ const sslOptions = {
     cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Properly load the RDS certificate
 };
 
+  
+
 // HTTPS server
 const PORT = process.env.PORT || 5000;
 https.createServer(sslOptions, app).listen(PORT, () => {
@@ -85,9 +99,15 @@ https.createServer(sslOptions, app).listen(PORT, () => {
 });
 
 // HTTP to HTTPS redirection
-const httpServer = http.createServer((req, res) => {
-    res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` });
+const HTTP_PORT = 80;
+http.createServer((req, res) => {
+    const host = req.headers.host || 'localhost';
+    const httpsUrl = `https://${host}${req.url}`;
+    res.writeHead(301, { Location: httpsUrl });
     res.end();
+}).listen(HTTP_PORT, () => {
+    console.log(`HTTP Server running on port ${HTTP_PORT} and redirecting to HTTPS`);
+});
 });
 const HTTP_PORT = 80;
 httpServer.listen(HTTP_PORT, () => {
