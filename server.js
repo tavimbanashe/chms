@@ -33,7 +33,7 @@ const app = express();
 
 // CORS Configuration: Allow requests from the frontend (Netlify)
 const corsOptions = {
-    origin: 'https://transcendent-starship-4017a6.netlify.app', // Netlify frontend URL
+    origin: 'https://churchmanagementsystem.netlify.app/', // Netlify frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Allows cookies or authentication headers
