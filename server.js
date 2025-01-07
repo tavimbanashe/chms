@@ -4,6 +4,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const https = require('https');
 const http = require('http');
+const fs = require('fs');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -33,26 +34,16 @@ const offeringsRoutes = require('./routes/offeringsRoutes');
 // Create the Express app
 const app = express();
 
-// Verify PEM_CERT environment variable
-if (!process.env.PEM_CERT) {
-    console.error('Error: PEM_CERT environment variable is not set.');
-    process.exit(1);
-}
-
-// SSL Configuration
-const sslOptions = {
-    cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Load the certificate
-};
-
-// CORS Configuration
+// CORS Configuration: Allow requests from the frontend (Netlify)
 const corsOptions = {
-    origin: 'https://churchmanagementsystem.netlify.app/',
+    origin: 'https://churchmanagementsystem.netlify.app/', // Netlify frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: true, // Allows cookies or authentication headers
 };
-app.use(cors(corsOptions));
-app.use(bodyParser.json());
+
+app.use(cors(corsOptions)); // Use CORS middleware with options
+app.use(bodyParser.json()); // Automatically parse JSON requests
 
 // Register routes
 app.use('/auth', authRoutes);
@@ -80,36 +71,29 @@ app.use('/api', otherApisRoutes);
 app.use('/api/offerings', offeringsRoutes);
 
 // Default route for health check
-  
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// SSL Configuration
+// SSL Configuration: Load certificate directly from environment variable
 const sslOptions = {
-    cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Properly load the RDS certificate
+    cert: `-----BEGIN CERTIFICATE-----\nMIICrzCCAjWgAwIBAgIQTgIvwTDuNWQo0Oe1sOPQEzAKBggqhkjOPQQDAzCBlzEL\nMAkGA1UEBhMCVVMxIjAgBgNVBAoMGUFtYXpvbiBXZWIgU2VydmljZXMsIEluYy4x\nEzARBgNVBAsMCkFtYXpvbiBSRFMxCzAJBgNVBAgMAldBMTAwLgYDVQQDDCdBbWF6\nb24gUkRTIGV1LW5vcnRoLTEgUm9vdCBDQSBFQ0MzODQgRzExEDAOBgNVBAcMB1Nl\nYXR0bGUwIBcNMjEwNTI0MjEwNjM4WhgPMjEyMTA1MjQyMjA2MzhaMIGXMQswCQYD\nVQQGEwJVUzEiMCAGA1UECgwZQW1hem9uIFdlYiBTZXJ2aWNlcywgSW5jLjETMBEG\nA1UECwwKQW1hem9uIFJEUzELMAkGA1UECAwCV0ExMDAuBgNVBAMMJ0FtYXpvbiBS\nRFMgZXUtbm9ydGgtMSBSb290IENBIEVDQzM4NCBHMTEQMA4GA1UEBwwHU2VhdHRs\nZTB2MBAGByqGSM49AgEGBSuBBAAiA2IABJuzXLU8q6WwSKXBvx8BbdIi3mPhb7Xo\nrNJBfuMW1XRj5BcKH1ZoGaDGw+BIIwyBJg8qNmCK8kqIb4cH8/Hbo3Y+xBJyoXq/\ncuk8aPrxiNoRsKWwiDHCsVxaK9L7GhHHAqNCMEAwDwYDVR0TAQH/BAUwAwEB/zAd\nBgNVHQ4EFgQUYgcsdU4fm5xtuqLNppkfTHM2QMYwDgYDVR0PAQH/BAQDAgGGMAoG\nCCqGSM49BAMDA2gAMGUCMQDz/Rm89+QJOWJecYAmYcBWCcETASyoK1kbr4vw7Hsg\n7Ew3LpLeq4IRmTyuiTMl0gMCMAa0QSjfAnxBKGhAnYxcNJSntUyyMpaXzur43ec0\n3D8npJghwC4DuICtKEkQiI5cSg==\n-----END CERTIFICATE-----` // Certificate replaced with actual PEM
 };
 
-  
-
-// HTTPS server
+// Start the HTTPS server
 const PORT = process.env.PORT || 5000;
 https.createServer(sslOptions, app).listen(PORT, () => {
     console.log(`HTTPS Server running securely on port ${PORT}`);
 });
 
-// HTTP to HTTPS redirection
-const HTTP_PORT = 80;
-http.createServer((req, res) => {
-    const host = req.headers.host || 'localhost';
-    const httpsUrl = `https://${host}${req.url}`;
-    res.writeHead(301, { Location: httpsUrl });
+// HTTP server to redirect to HTTPS
+const httpServer = http.createServer((req, res) => {
+    res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` });
     res.end();
-}).listen(HTTP_PORT, () => {
-    console.log(`HTTP Server running on port ${HTTP_PORT} and redirecting to HTTPS`);
 });
-});
-const HTTP_PORT = 80;
+
+// Start the HTTP server to handle redirects (on port 80)
+const HTTP_PORT = 80; // Default HTTP port
 httpServer.listen(HTTP_PORT, () => {
     console.log(`HTTP Server running on port ${HTTP_PORT} and redirecting to HTTPS`);
 });
