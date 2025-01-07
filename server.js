@@ -33,16 +33,15 @@ const offeringsRoutes = require('./routes/offeringsRoutes');
 // Create the Express app
 const app = express();
 
-// CORS Configuration: Allow requests from the frontend (Netlify)
+// CORS Configuration
 const corsOptions = {
-    origin: 'https://churchmanagementsystem.netlify.app/', // Netlify frontend URL
+    origin: 'https://churchmanagementsystem.netlify.app/',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true, // Allows cookies or authentication headers
+    credentials: true,
 };
-
-app.use(cors(corsOptions)); // Use CORS middleware with options
-app.use(bodyParser.json()); // Automatically parse JSON requests
+app.use(cors(corsOptions));
+app.use(bodyParser.json());
 
 // Register routes
 app.use('/auth', authRoutes);
@@ -74,25 +73,23 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// SSL Configuration: Load certificate from environment variable
+// SSL Configuration
 const sslOptions = {
     cert: Buffer.from(process.env.PEM_CERT, 'utf-8'), // Properly load the RDS certificate
 };
 
-// Start the HTTPS server
+// HTTPS server
 const PORT = process.env.PORT || 5000;
 https.createServer(sslOptions, app).listen(PORT, () => {
     console.log(`HTTPS Server running securely on port ${PORT}`);
 });
 
-// HTTP server to redirect to HTTPS
+// HTTP to HTTPS redirection
 const httpServer = http.createServer((req, res) => {
     res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` });
     res.end();
 });
-
-// Start the HTTP server to handle redirects (on port 80)
-const HTTP_PORT = 80; // Default HTTP port
+const HTTP_PORT = 80;
 httpServer.listen(HTTP_PORT, () => {
     console.log(`HTTP Server running on port ${HTTP_PORT} and redirecting to HTTPS`);
 });
