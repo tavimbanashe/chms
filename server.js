@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 
 // Import routes
@@ -74,13 +75,27 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// SSL Configuration: Load certificate directly from environment variable
+// SSL Configuration: Load certificate directly from environment variables
 const sslOptions = {
-    ca: process.env.PEM_CERT, // Certificate from the environment variable
+    //key: process.env.PEM_PRIVATE_KEY, // Private key from environment variable
+    cert: process.env.PEM_CERT, // Full certificate from environment variable
+    //ca: process.env.PEM_CA, // CA if applicable
 };
 
 // Start the HTTPS server
 const PORT = process.env.PORT || 5000;
 https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`Server running securely on port ${PORT}`);
+    console.log(`HTTPS Server running securely on port ${PORT}`);
+});
+
+// HTTP server to redirect to HTTPS
+const httpServer = http.createServer((req, res) => {
+    res.writeHead(301, { 'Location': `https://${req.headers.host}${req.url}` });
+    res.end();
+});
+
+// Start the HTTP server to handle redirects (on port 80)
+const HTTP_PORT = 80; // Default HTTP port
+httpServer.listen(HTTP_PORT, () => {
+    console.log(`HTTP Server running on port ${HTTP_PORT} and redirecting to HTTPS`);
 });
