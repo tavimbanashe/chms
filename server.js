@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const https = require('https');
+const fs = require('fs');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -72,6 +74,15 @@ app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
 
-// Start the server
+// SSL Configuration for Express server
+const sslOptions = {
+    //key: fs.readFileSync(process.env.PEM_CERT_KEY), // Path to your private key for your server (if required)
+    cert: fs.readFileSync(process.env.PEM_CERT), // Path to your public certificate for your server
+    //ca: fs.readFileSync(process.env.PEM_CERT_CA), // Path to your certificate authority file (if required)
+};
+
+// Start the HTTPS server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`Server running securely on port ${PORT}`);
+});
