@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { Pool } = require('pg'); // If using PostgreSQL, change this if using another DB
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -71,6 +72,27 @@ app.use('/api/offerings', offeringsRoutes);
 app.get('/', (req, res) => {
     res.send({ message: 'Welcome to the Church Management System API' });
 });
+
+// Database connection setup (PostgreSQL as an example)
+const dbConfig = {
+    user: process.env.DB_USER,               // DB username from environment
+    host: process.env.DB_HOST,               // DB host (RDS endpoint)
+    database: process.env.DB_NAME,           // DB name
+    password: process.env.DB_PASSWORD,       // DB password
+    port: process.env.DB_PORT || 5432,       // DB port, defaulting to 5432 for PostgreSQL
+    ssl: {
+        rejectUnauthorized: false,           // For SSL connection (necessary for AWS RDS)
+        ca: process.env.PEM_CERT,            // PEM certificate from environment variable
+    },
+};
+
+// Create the connection pool
+const pool = new Pool(dbConfig);
+
+// Connect to the database and handle errors
+pool.connect()
+    .then(() => console.log('Database connected successfully'))
+    .catch((err) => console.error('Error connecting to database:', err));
 
 // Start the server
 const PORT = process.env.PORT || 5000;
