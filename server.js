@@ -4,7 +4,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const https = require('https');
 const http = require('http');
-const fs = require('fs');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
