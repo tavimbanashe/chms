@@ -1,14 +1,34 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const morgan = require('morgan'); // For logging requests
+const rateLimit = require('express-rate-limit'); // For rate limiting
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
-// ...other imports
+const memberRoutes = require('./routes/memberRoutes');
+const cellMinistryRoutes = require('./routes/cellMinistryRoutes');
+const counselingRoutes = require('./routes/counselingRoutes');
+const givingReportsRoutes = require('./routes/givingReportsRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+const budgetRoutes = require('./routes/budgetRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
+const serviceAgendaRoutes = require('./routes/serviceAgendaRoutes');
+const volunteerScheduleRoutes = require('./routes/volunteerScheduleRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const communicationRoutes = require('./routes/communicationRoutes');
+const rolesPermissionsRoutes = require('./routes/rolesPermissionsRoutes');
+const onlineGivingRoutes = require('./routes/onlineGivingRoutes');
+const servicePlanRoutes = require('./routes/servicePlanRoutes');
+const tithesRoutes = require('./routes/tithesRoutes');
+const specialGivingRoutes = require('./routes/specialGivingRoutes');
+const reportsRoutes = require('./routes/reportsRoutes');
+const reportsAnalyticsRoutes = require('./routes/reportsAnalyticsRoutes');
+const eventRoutes = require('./routes/eventRoutes');
+const otherApisRoutes = require('./routes/otherApisRoutes');
+const offeringsRoutes = require('./routes/offeringsRoutes');
 
 // Create the Express app
 const app = express();
@@ -24,14 +44,48 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions)); // Use CORS middleware with options
-app.use(bodyParser.json()); // Automatically parse JSON requests
+app.use(express.json()); // Automatically parses JSON request bodies
 app.use(helmet()); // Secure the app with HTTP headers
-app.use(morgan('combined')); // Log HTTP requests
+
+// Logging configuration based on environment
+if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('tiny'));  // Minimal logging in production
+} else {
+    app.use(morgan('combined'));  // Detailed logging in development
+}
+
+// Rate limiting to prevent abuse
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per window
+    message: 'Too many requests, please try again later.'
+});
+app.use(limiter);  // Apply rate limiter globally
 
 // Register routes
 app.use('/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
-// ...other route registrations
+app.use('/api/members', memberRoutes);
+app.use('/api/cell-ministries', cellMinistryRoutes);
+app.use('/api/members/counseling', counselingRoutes);
+app.use('/api/giving-reports', givingReportsRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/calendar', calendarRoutes);
+app.use('/api/service-agenda', serviceAgendaRoutes);
+app.use('/api/volunteer-schedules', volunteerScheduleRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/api/communication', communicationRoutes);
+app.use('/api/roles-permissions', rolesPermissionsRoutes);
+app.use('/api/online-giving', onlineGivingRoutes);
+app.use('/api/service-planning', servicePlanRoutes);
+app.use('/api/tithes', tithesRoutes);
+app.use('/api/special-givings', specialGivingRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/reports-analytics', reportsAnalyticsRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api', otherApisRoutes);
+app.use('/api/offerings', offeringsRoutes);
 
 // Default route for health check
 app.get('/', (req, res) => {
