@@ -40,8 +40,11 @@ const corsOptions = {
         : 'http://localhost:3000', // Localhost for development
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: true,  // Make sure the frontend is sending credentials
+    preflightContinue: false,  // Optional: set this if you want preflight responses to be handled automatically
+    optionsSuccessStatus: 200  // Optional: To fix 405 issues in some browsers
 };
+
 
 app.use(cors(corsOptions)); // Use CORS middleware with options
 app.use(express.json()); // Automatically parses JSON request bodies
