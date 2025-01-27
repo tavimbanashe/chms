@@ -1,7 +1,5 @@
 require('dotenv').config();
 const express = require('express');
-const fs = require('fs');
-const https = require('https');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan'); // For logging requests
@@ -100,22 +98,6 @@ app.use((err, req, res, next) => {
     res.status(500).send({ message: 'Something went wrong!' });
 });
 
-// SSL Configuration
-const sslEnabled = process.env.NODE_ENV === 'production';
-
-// Check if SSL certificates exist in the environment
-if (sslEnabled) {
-    // Load CA certificate (since you only have the CA cert)
-    const ca = fs.readFileSync(process.env.DB_SSLROOTCERT, 'utf8');  // Load the CA certificate
-
-    const credentials = { ca };  // Using CA certificate to verify connections
-
-    // Create HTTPS server using CA certificate (without server key/certificate)
-    https.createServer(credentials, app).listen(443, () => {
-        console.log('HTTPS Server running on port 443');
-    });
-} else {
-    // Fallback to HTTP in development
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
